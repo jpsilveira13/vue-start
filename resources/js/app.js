@@ -8,6 +8,21 @@ require('./bootstrap');
 
 window.Vue = require('vue');
 import { Form, HasError, AlertError } from 'vform';
+import moment from 'moment';
+
+
+import Swal from 'sweetalert2'
+window.swal = Swal;
+
+const toast = Swal.mixin({
+    toast: true,
+    position: 'top-end',
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
+});
+
+window.toast = toast;
 
 
 window.Form = Form;
@@ -18,6 +33,24 @@ Vue.component(AlertError.name, AlertError)
 import VueRouter from 'vue-router'
 Vue.use(VueRouter)
 
+import VueProgressBar from 'vue-progressbar';
+
+
+
+const options = {
+    color: '#bffaf3',
+    failedColor: '#874b4b',
+    thickness: '5px',
+    transition: {
+        speed: '0.2s',
+        opacity: '0.6s',
+        termination: 300
+    },
+    autoRevert: true,
+    inverse: false
+}
+
+Vue.use(VueProgressBar, options)
 
 let routes = [
     { path: '/dashboard', component: require('./components/Dashboard.vue').default },
@@ -32,7 +65,13 @@ const router = new VueRouter({
     linkActiveClass: 'active'
 })
 
+Vue.filter('upText',function (text) {
+    return text.charAt(0).toUpperCase() + text.slice(1);
+});
 
+Vue.filter('myDate',function (created) {
+    return moment(created).format('MMMM Do YYYY, h:mm:ss a');
+})
 /**
  * The following block of code may be used to automatically register your
  * Vue components. It will recursively scan this directory for the Vue
