@@ -7,7 +7,7 @@
                         <h3 class="card-title">Users Table</h3>
 
                         <div class="card-tools">
-                            <button data-toggle="modal" data-target="#addNew" class="btn btn-success">Add Users <i class="fas fa-user-plus fa-fw"></i></button>
+                            <button @click="newModal" class="btn btn-success">Add Users <i class="fas fa-user-plus fa-fw"></i></button>
                         </div>
                     </div>
                     <!-- /.card-header -->
@@ -31,9 +31,9 @@
                                 <td>{{user.type | upText}}</td>
                                 <td>{{user.created_at | myDate}}</td>
                                 <td>
-                                    <a href="#"> <i class="fa fa-edit text-blue"></i></a>
+                                    <a href="#" @click="editModal(user)"> <i class="fa fa-edit text-blue"></i></a>
                                     /
-                                    <a href="#"> <i class="fa fa-trash text-red"></i></a>
+                                    <a href="#" @click="deleteUser(user.id)"> <i class="fa fa-trash text-red"></i></a>
                                 </td>
                                 <td> </td>
                             </tr>
@@ -129,20 +129,62 @@
             }
         },
         methods:{
+            editModal(user){
+                this.form.reset()
+                $('#addNew').modal('show');
+                this.form.fill(user);
+            },
+            newModal(){
+                this.form.reset()
+                $('#addNew').modal('show');
+            },
+            deleteUser(id){
+                swal.fire({
+                    title: 'Are you sure?',
+                    text: "You won't be able to revert this!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    //send rquest to server
+                    if (result.value) {
+                        this.form.delete('api/user/' + id).then(() => {
+
+                            swal.fire(
+                                'Deleted!',
+                                'Your file has been deleted.',
+                                'success'
+                            )
+
+                            Fire.$emit('AfterCreate');
+                        }).catch(() => {
+                            swal('Failed!', "There was something wrong!", 'warning');
+                        });
+                    }
+                })
+            },
             loadUsers(){
                 axios.get("api/user").then(({ data }) => (this.users = data.data))
             },
             createUser(){
                 this.$Progress.start()
-                this.form.post('api/user');
-                Fire.$emit('AfterCreate');
-                $('#addNew').modal('hide');
-                toast.fire({
-                    icon: 'success',
-                    title: 'User create successfully'
-                })
+                this.form.post('api/user')
+                    .then( () =>{
+                        Fire.$emit('AfterCreate');
+                        $('#addNew').modal('hide');
+                        toast.fire({
+                            icon: 'success',
+                            title: 'User create successfully'
+                        })
 
-                this.$Progress.finish()
+                        this.$Progress.finish()
+                    })
+                    .catch(() =>{
+
+                    })
+
             }
         },
         created() {
@@ -150,7 +192,7 @@
             Fire.$on('AfterCreate',() => {
                 this.loadUsers();
             });
-         //   setInterval(() => this.loadUsers(),3000);
+            //   setInterval(() => this.loadUsers(),3000);
 
 
         }
